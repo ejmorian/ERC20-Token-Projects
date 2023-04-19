@@ -3,15 +3,19 @@ pragma solidity ^0.8.18;
 
 error Yorokobi__TransactionFailed();
 error Yorokobi__InsufficientFunds();
+error Yorokobi__UnAuthorisedRequest();
 
 contract Yorokobi {
-    string private constant s_name = "Yorokobi";
-    string private constant s_symbol = "YRKB";
-    uint8 private constant s_decimals = 0;
-    uint256 private constant s_totalSupply = 1e15;
-    mapping(address => uint) private balances;
+    mapping(address => uint) private s_balances;
+    mapping(address => mapping(address => uint)) private s_allowances;
+    string private constant c_name = "Yorokobi";
+    string private constant c_symbol = "YRKBY";
+    uint8 private constant c_decimals = 0;
+    uint256 private constant c_totalSupply = 1e15;
 
-    constructor() {}
+    constructor() {
+        s_balances[msg.sender] = c_totalSupply;
+    }
 
     event Transfer(address indexed _from, address indexed _to, uint256 _value);
     event Approval(
@@ -21,23 +25,23 @@ contract Yorokobi {
     );
 
     function name() public pure returns (string memory) {
-        return s_name;
+        return c_name;
     }
 
     function symbol() public pure returns (string memory) {
-        return s_symbol;
+        return c_symbol;
     }
 
     function decimals() public pure returns (uint8) {
-        return s_decimals;
+        return c_decimals;
     }
 
     function totalSupply() public pure returns (uint256) {
-        return s_totalSupply;
+        return c_totalSupply;
     }
 
     function balanceOf(address _owner) public view returns (uint256 balance) {
-        return balances[_owner];
+        return s_balances[_owner];
     }
 
     function transfer(
@@ -46,9 +50,9 @@ contract Yorokobi {
     ) public returns (bool success) {
         address _from = msg.sender;
 
-        if (balanceOf(msg.sender) > _value) {
-            balances[msg.sender] -= _value;
-            balances[_to] += _value;
+        if (balanceOf(msg.sender) >= _value) {
+            s_balances[msg.sender] -= _value;
+            s_balances[_to] += _value;
 
             emit Transfer(_from, _to, _value);
             return (success);
@@ -61,15 +65,35 @@ contract Yorokobi {
         address _from,
         address _to,
         uint256 _value
-    ) public returns (bool success) {}
+    ) public returns (bool success) {
+        if (s_allowances[msg.sender][_from] >= 0) {
+            s_balances[_from] -= _value;
+            s_balances[_to] += _value;
+            s_allowances[msg.sender][_from] -= _value;
+            emit Transfer(_from, _to, _value);
+            return true;
+        } else {
+            revert Yorokobi__UnAuthorisedRequest();
+        }
+    }
 
     function approve(
         address _spender,
         uint256 _value
-    ) public returns (bool success) {}
+    ) public returns (bool success) {
+        if (balanceOf(msg.sender) >= _value) {
+            s_allowances[_spender][msg.sender] = _value;
+            emit Approval(msg.sender, _spender, _value);
+            return true;
+        } else {
+            revert Yorokobi__TransactionFailed();
+        }
+    }
 
     function allowance(
         address _owner,
         address _spender
-    ) public view returns (uint256 remaining) {}
+    ) public view returns (uint256 remaining) {
+        return remaining = s_allowances[_spender][_owner];
+    }
 }
