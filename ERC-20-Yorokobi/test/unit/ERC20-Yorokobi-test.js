@@ -5,6 +5,7 @@ describe("ERC20 Yorokobi", () => {
 
   let contract, deployerContract, userContract, userContractTwo, deployer, user, userTwo, value;
 
+  //initilise contracts and connection to accounts.
   beforeEach(async () => {
     value = "50";
 
@@ -36,6 +37,7 @@ describe("ERC20 Yorokobi", () => {
   });
 
   describe("general token information", () => {
+
     it("get the current balance of an account", async () =>{
       assert.equal(await contract.balanceOf(user.address), 0);
     })
@@ -56,7 +58,6 @@ describe("ERC20 Yorokobi", () => {
       assert.equal(await contract.decimals(), 0);
     })
   })
-
 
   describe("Owner initially owns total supply fo the token", ()=> {
     it("balance of owner is equals total supply", async () => {
@@ -116,5 +117,57 @@ describe("ERC20 Yorokobi", () => {
 
   })
 
+  describe("Allow other accounts to spend another accounts token", () => {
+
+    it("amount of allowance is approved by the token holder to be used by third-party account", async () => {
+      const approve = await deployerContract.approve(user.address, "100");
+      await approve.wait(1);
+
+      assert.equal(await contract.balanceOf(user.address), "0");
+
+      await new Promise(async (resolve) => {
+        contract.once("Approval", (_owner,_spender, _value) => {
+            assert.equal(_owner, deployer.address);
+            assert.equal(_spender, user.address);
+            assert.equal(_value, "100");
+            resolve();
+        })
+      })
+    
+    })
+
+    it("returns the allowance of third-party accounts for an account", async () => {
+      const approve = await deployerContract.approve(user.address, "100");
+      await approve.wait(1);
+
+      const allowance = await contract.allowance(deployer.address, user.address);
+      assert.equal(allowance, "100");
+    })
+
+    it("approve whether an amount of token from an account can be spent by a third-party account", async () => {
+      const approve = await deployerContract.approve(user.address, "100");
+      await approve.wait(1);
+
+      assert.equal(await contract.balanceOf(user.address), "0");
+
+      const transferFrom = await userContract.transferFrom(deployer.address, userTwo.address, "100");
+      await transferFrom.wait(1);
+
+      assert.equal(await contract.balanceOf(userTwo.address), "100");
+    })
+
+    it("deducts the token used by third-party account to the allowance balance", async () => {
+      const approve = await deployerContract.approve(user.address, "100");
+      await approve.wait(1);
+
+      assert.equal(await contract.balanceOf(user.address), "0");
+
+      const transferFrom = await userContract.transferFrom(deployer.address, userTwo.address, "50");
+      await transferFrom.wait(1);
+
+      const allowance = await contract.allowance(deployer.address, user.address);
+      assert.equal(allowance, "50");
+    })
+  })
 
 });
