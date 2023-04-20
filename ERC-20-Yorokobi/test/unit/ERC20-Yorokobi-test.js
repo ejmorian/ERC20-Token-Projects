@@ -35,6 +35,29 @@ describe("ERC20 Yorokobi", () => {
 
   });
 
+  describe("general token information", () => {
+    it("get the current balance of an account", async () =>{
+      assert.equal(await contract.balanceOf(user.address), 0);
+    })
+
+    it("get total supply of tokens", async ()=> {
+      assert.equal(await contract.totalSupply(), 1e15);
+    })
+
+    it("get token name", async () => {
+      assert.equal(await contract.name(), "Yorokobi");
+    })
+
+    it("get token symbol", async () => {
+      assert.equal(await contract.symbol(), "YRKBY");
+    })
+
+    it("get token decimals", async () => {
+      assert.equal(await contract.decimals(), 0);
+    })
+  })
+
+
   describe("Owner initially owns total supply fo the token", ()=> {
     it("balance of owner is equals total supply", async () => {
       const totalSupply = await contract.totalSupply();
@@ -46,6 +69,10 @@ describe("ERC20 Yorokobi", () => {
   })
 
   describe("transfer tokens from one account to another",  () => {
+
+    it("reverts if sender does not have enough token", async () => {
+      await expect(userContract.transfer(deployer.address, "1")).to.be.revertedWithCustomError(contract, "Yorokobi__InsufficientFunds");
+    })
 
     it("user balance starts at zero", async () => {
       const userInitialBalance = await contract.balanceOf(user.address)
