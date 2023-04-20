@@ -66,14 +66,14 @@ contract Yorokobi {
         address _to,
         uint256 _value
     ) public returns (bool success) {
-        if (s_allowances[msg.sender][_from] >= 0) {
+        if (allowance(_from, msg.sender) < _value) {
+            revert Yorokobi__UnAuthorisedRequest();
+        } else {
             s_balances[_from] -= _value;
             s_balances[_to] += _value;
             s_allowances[msg.sender][_from] -= _value;
             emit Transfer(_from, _to, _value);
             return true;
-        } else {
-            revert Yorokobi__UnAuthorisedRequest();
         }
     }
 
@@ -86,7 +86,7 @@ contract Yorokobi {
             emit Approval(msg.sender, _spender, _value);
             return true;
         } else {
-            revert Yorokobi__TransactionFailed();
+            revert Yorokobi__InsufficientFunds();
         }
     }
 

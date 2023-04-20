@@ -156,6 +156,16 @@ describe("ERC20 Yorokobi", () => {
       assert.equal(await contract.balanceOf(userTwo.address), "100");
     })
 
+    it("reverts if the _spender does not have allowance to transfer tokens from another account", async () => {
+      await expect( userContractTwo.transferFrom(deployer.address, user.address, "1000")).to.be.revertedWithCustomError(contract, "Yorokobi__UnAuthorisedRequest");
+      console.log(await contract.balanceOf(user.address));
+    })
+
+    it("reverts if a token holder wants to approve allowance but has insufficient funds", async () => {
+
+      await expect( userContract.approve(deployer.address, "1")).to.be.revertedWithCustomError(contract, "Yorokobi__InsufficientFunds");
+    })
+
     it("deducts the token used by third-party account to the allowance balance", async () => {
       const approve = await deployerContract.approve(user.address, "100");
       await approve.wait(1);
