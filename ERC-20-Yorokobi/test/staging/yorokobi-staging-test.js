@@ -5,14 +5,34 @@ const {developmentChains} = require("../../hardhat-helper-config")
 developmentChains.includes(network.name) ? 
 describe.skip : 
 describe("Sepolia Live Test Network", () => {
-    let deployer, userOne, userTwo, userThree, contract;
+    let deployer, userOne, userTwo, contract;
 
 
     //get contract and accounts
     before(async ()=> { 
-        [deployer, userOne, userTwo, userThree] = await ethers.getSigners();
+        [deployer, userOne, userTwo] = await ethers.getSigners();
         contract = await ethers.getContractAt("Yorokobi", "0xf5641bBA29546bb48032748114b74E041150c69B");
 
+    })
+
+    describe("Get Token Information", () => {
+      
+          it("get total supply of tokens", async ()=> {
+            assert.equal(await contract.totalSupply(), 1e15);
+          })
+      
+          it("get token name", async () => {
+            assert.equal(await contract.name(), "Yorokobi");
+          })
+      
+          it("get token symbol", async () => {
+            assert.equal(await contract.symbol(), "YRKBY");
+          })
+      
+          it("get token decimals", async () => {
+            assert.equal(await contract.decimals(), 0);
+          })
+        
     })
 
     describe("Token holder can transfer to other accounts", ()=> {
