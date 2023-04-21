@@ -41,7 +41,42 @@ describe("Sepolia Live Test Network", () => {
         })
     })
 
+    describe("Token Holder can grant allowance to other accounts", () => {
 
+        let initialRecieverBalance, value, allowance;
+
+        before(async() => {
+            value = 250;
+            allowance = "1000";
+            initialRecieverBalance = await contract.balanceOf(userTwo.address)
+
+        })
+
+        it("grants allowance to third-party accounts", async () => {
+
+
+            const deployerContract = await contract.connect(deployer);
+            const tx = await deployerContract.approve(userOne.address, allowance)
+            await tx.wait(1)
+            assert.equal((await contract.allowance(deployer.address, userOne.address)).toString(), allowance)
+        })
+
+        it("third-party accounts can transfer token from another account", async () => {
+            const userContract = await contract.connect(userOne);
+            const tx = await userContract.transferFrom(deployer.address, userTwo.address, value)
+            await tx.wait(1)
+
+            currentRecieverBalance = await contract.balanceOf(userTwo.address)
+
+            assert.equal(currentRecieverBalance.toString(), initialRecieverBalance.add(value).toString())
+        })
+
+        it("allowance is updated when consumed", async () => {
+            const remainingAllowance = await contract.allowance(deployer.address, userOne.address);
+            assert.equal(remainingAllowance, Number(allowance)-value);
+        })
+
+    })
 
 
 })
