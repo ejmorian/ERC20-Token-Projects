@@ -1,6 +1,8 @@
 const { expect, assert } = require("chai");
-const { ethers } = require("hardhat");
+const { ethers, network } = require("hardhat");
+const {developmentChains} = require("../../hardhat-helper-config")
 
+!developmentChains.includes(network.name) ? describe.skip :
 describe("ERC20 Yorokobi", () => {
 
   let contract, deployerContract, userContract, userContractTwo, deployer, user, userTwo, value;
@@ -158,7 +160,6 @@ describe("ERC20 Yorokobi", () => {
 
     it("reverts if the _spender does not have allowance to transfer tokens from another account", async () => {
       await expect( userContractTwo.transferFrom(deployer.address, user.address, "1000")).to.be.revertedWithCustomError(contract, "Yorokobi__UnAuthorisedRequest");
-      console.log(await contract.balanceOf(user.address));
     })
 
     it("reverts if a token holder wants to approve allowance but has insufficient funds", async () => {
