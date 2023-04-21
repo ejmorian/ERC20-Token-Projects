@@ -26,5 +26,8 @@ module.exports = {
     
     apiKey: {sepolia : ETHERSCAN_API_KEY,}
 
+  },
+  mocha: {
+    setTimeout: 100000,
   }
 };
