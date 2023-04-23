@@ -35,4 +35,9 @@ contract Beri is ERC20 {
             revert Beri__InsufficientMaxSupply(remaining);
         }
     }
+
+    function mint(uint256 amount) external {
+        address account = msg.sender;
+        _mint(account, amount);
+    }
 }
