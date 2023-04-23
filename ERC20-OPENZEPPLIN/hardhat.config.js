@@ -1,4 +1,5 @@
 require("@nomicfoundation/hardhat-toolbox");
+require("@nomiclabs/hardhat-etherscan");
 require("dotenv").config()
 
 const SEPOLIA_URL = process.env.SEPOLIA_URL;
@@ -21,6 +22,6 @@ module.exports = {
     }
   },
   etherscan: {
-    apiKey: ETHERSCAN_API_KEY
+    apiKey: {   sepolia: ETHERSCAN_API_KEY}
   }
 };

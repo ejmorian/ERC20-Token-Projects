@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.18;
 
-import "../node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 error Beri__UnAuthorised();
 error Beri__InsufficientMaxSupply(uint256 remainder);
@@ -14,7 +14,7 @@ contract Beri is ERC20 {
         _;
     }
 
-    uint256 public constant _maxSupply = 1e15;
+    uint256 public constant _maxSupply = 1e15 * 1e18;
     address private immutable _creator;
 
     constructor(
@@ -22,6 +22,7 @@ contract Beri is ERC20 {
         string memory _symbol
     ) ERC20(_name, _symbol) {
         _creator = msg.sender;
+        mint(1e18);
     }
 
     function _mint(
@@ -36,7 +37,7 @@ contract Beri is ERC20 {
         }
     }
 
-    function mint(uint256 amount) external {
+    function mint(uint256 amount) public {
         address account = msg.sender;
         _mint(account, amount);
     }
